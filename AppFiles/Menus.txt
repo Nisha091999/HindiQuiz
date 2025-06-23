@@ -1,0 +1,7 @@
+MenuId Level MenuLevel MenuName FolderName
+1 L2 1 Ka half Words KaImages
+2 L2 1 Ch half Words ChaImages
+3 L2 1 Ta half Words TaImages
+4 L2 1 Tha half Words ThaImages
+5 L2 1 Pa half Words PaImages
+6 L2 1 All Random words None

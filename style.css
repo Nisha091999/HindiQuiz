@@ -1,0 +1,76 @@
+/* Base Reset and Body Style */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f0f4f7, #d9e8f5);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Login Container Box */
+.container {
+    background: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    width: 320px;
+    text-align: center;
+}
+
+/* Heading Style */
+h2 {
+    margin-bottom: 20px;
+    color: #2a4d69;
+}
+
+/* Error Message Styling */
+.error {
+    color: red;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+/* Form Input Blocks */
+.form-group {
+    text-align: left;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #333;
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[readonly] {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* Submit Button */
+form input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 8px;
+    border: none;
+    background-color: #2a4d69;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+form input[type="submit"]:hover {
+    background-color: #1d334a;
+}

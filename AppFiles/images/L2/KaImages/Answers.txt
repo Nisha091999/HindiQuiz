@@ -1,0 +1,2 @@
+dog.png,Kutta,Kutha,Kuta
+room.png,Kamra,Kamara,Comera
