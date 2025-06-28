@@ -1,0 +1,4 @@
+Acchha.png,Acchha
+Bachha.png,Bachha
+Ichha.png,Ichha
+Kaccha.png,Kaccha

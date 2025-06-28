@@ -1,2 +1,12 @@
-dog.png,Kutta,Kutha,Kuta
-room.png,Kamra,Kamara,Comera
+Chuckker.png,Chuckker
+Dhakka.png,Dhakka
+Duckkan.png,Duckkan
+Gyarah.png,Gyarah
+Kya.png,Kya
+Muckhan.png,Muckhan
+Muckkhi.png,Muckkhi
+Mukhya.png,Mukhya
+Sankhya.png,Sankhya
+Shuckkar.png,Shuckkar
+Takhti.png,Takhti,Thakthi
+Tuckkar.png,Tuckkar
