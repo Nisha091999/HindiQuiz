@@ -1,20 +1,20 @@
 <?php
 session_start();
 
-// Set flag to block re-entering quiz.php
-$_SESSION['quiz_done'] = true;
-
-// Validate access
+// Prevent direct access without POST and valid session
 if (
-    !isset($_SESSION['user']) || 
-    !isset($_SESSION['quiz_images']) || 
-    !isset($_SESSION['quiz_answers']) ||
     $_SERVER['REQUEST_METHOD'] !== 'POST' ||
+    !isset($_SESSION['user']) ||
+    !isset($_SESSION['quiz_images']) ||
+    !isset($_SESSION['quiz_answers']) ||
     empty($_POST["img0"])
 ) {
     header("Location: index.php");
     exit();
 }
+
+// Set flag to prevent re-entering quiz.php
+$_SESSION['quiz_done'] = true;
 
 $user = $_SESSION['user'];
 $level = $_SESSION['level'];
@@ -29,12 +29,13 @@ $results = [];
 for ($i = 0; $i < $total; $i++) {
     $img = $_POST["img$i"] ?? '';
     $response = trim($_POST["q$i"] ?? '');
-    
-    // Avoid crashing on unexpected data
+
+    // Skip invalid input
     if (!isset($answers[$img])) continue;
-    
+
     $correct = in_array(strtolower($response), array_map('strtolower', $answers[$img]));
     if ($correct) $score++;
+
     $results[] = [
         'img' => $img,
         'response' => $response,
@@ -43,9 +44,12 @@ for ($i = 0; $i < $total; $i++) {
     ];
 }
 
-// Save score
+// Save score to file
 $scoreLine = "$level,$user,$time,$sessionId,$score/$total\n";
 file_put_contents("AppData/Scores.txt", $scoreLine, FILE_APPEND);
+
+// Clear quiz session data so it can't be reused
+unset($_SESSION['quiz_images'], $_SESSION['quiz_answers'], $_SESSION['quiz_folder'], $_SESSION['allow_quiz']);
 ?>
 <!DOCTYPE html>
 <html>
@@ -113,14 +117,15 @@ file_put_contents("AppData/Scores.txt", $scoreLine, FILE_APPEND);
         }
     </style>
     <script>
-        // Disable back/forward navigation after result page
-        window.history.pushState(null, document.title, window.location.href);
-        window.history.pushState(null, document.title, window.location.href);
-        window.history.back();
+        // Prevent browser back or forward navigation to quiz
+        if (performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
+            location.href = "index.php";
+        }
 
-        window.onpopstate = function () {
-            window.history.go(1);
-        };
+        history.pushState(null, "", location.href);
+        window.addEventListener("popstate", function () {
+            history.pushState(null, "", location.href);
+        });
     </script>
 </head>
 <body>

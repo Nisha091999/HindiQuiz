@@ -1,10 +1,15 @@
 <?php
 session_start();
+
+// 🛡️ Block access if not logged in
 if (!isset($_SESSION['user'])) {
     header("Location: index.php");
     exit();
 }
-// $_SESSION['allow_quiz'] = true; // allow access to quiz.php only once
+
+// ✅ Allow access to quiz once, and clear old flag so user can retake
+$_SESSION['allow_quiz'] = true;
+unset($_SESSION['quiz_done']); // Enable fresh quiz session
 
 $menus = [
     ["name" => "Ka half words", "folder" => "KaImages"],
@@ -73,7 +78,7 @@ $menus = [
 
     <div class="grid">
         <?php foreach ($menus as $m): ?>
-            <form method="GET" action="quiz.php">
+            <form method="POST" action="quiz.php">
                 <input type="hidden" name="folder" value="<?= $m['folder'] ?>">
                 <button type="submit" class="button"><?= htmlspecialchars($m['name']) ?></button>
             </form>

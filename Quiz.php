@@ -1,29 +1,37 @@
 <?php
+// 🛡️ Strong cache prevention
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
+
 session_start();
 
-// // BLOCK if quiz is already completed
-// if (isset($_SESSION['quiz_done']) && $_SESSION['quiz_done'] === true) {
-//     header("Location: index.php");
-//     exit();
-// }
-
-/// Prevent caching
-header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
-header("Expires: 0");
-header("Pragma: no-cache");
-
-// Allow access without 'allow_quiz' restriction
-if (!isset($_SESSION['user']) || !isset($_GET['folder'])) {
+// 🔒 Block access if quiz already completed
+if (!empty($_SESSION['quiz_done'])) {
     header("Location: index.php");
     exit();
 }
-// Do not unset($_SESSION['allow_quiz']);
 
-$folder = $_GET['folder'];
+// 🔐 Enforce POST-only access from menu
+if (
+    $_SERVER['REQUEST_METHOD'] !== 'POST' ||
+    !isset($_POST['folder']) ||
+    !isset($_SESSION['allow_quiz']) ||
+    $_SESSION['allow_quiz'] !== true
+) {
+    header("Location: index.php");
+    exit();
+}
+
+unset($_SESSION['allow_quiz']); // One-time access only
+
+$folder = $_POST['folder'];
 $level = $_SESSION['level'];
 $imgPath = "AppFiles/images/$level/$folder/";
 $answerFile = $imgPath . "Answers.txt";
 
+// 🔄 Load images and answers
 $images = [];
 $answersMap = [];
 if (file_exists($answerFile)) {
@@ -37,6 +45,8 @@ if (file_exists($answerFile)) {
 }
 shuffle($images);
 $selectedImages = array_slice($images, 0, 10);
+
+// 🧠 Store quiz session data
 $_SESSION['quiz_images'] = $selectedImages;
 $_SESSION['quiz_answers'] = $answersMap;
 $_SESSION['quiz_folder'] = $folder;
@@ -112,6 +122,12 @@ $_SESSION['quiz_folder'] = $folder;
             background-color: #2980b9;
         }
     </style>
+    <script>
+        // 🛡 Handle browser back-forward navigation issue
+        if (performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
+            location.href = "index.php";
+        }
+    </script>
 </head>
 <body>
 <div class="container">
