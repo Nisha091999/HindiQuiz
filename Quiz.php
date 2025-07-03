@@ -5,6 +5,9 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 header("Expires: Sat, 01 Jan 2000 00:00:00 GMT");
 
+// ✅ Ensure UTF-8 output
+header('Content-Type: text/html; charset=utf-8');
+
 session_start();
 
 // 🔒 Block access if quiz already completed
@@ -52,10 +55,13 @@ $_SESSION['quiz_answers'] = $answersMap;
 $_SESSION['quiz_folder'] = $folder;
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
+    <meta charset="utf-8">
     <title>Quiz - <?= htmlspecialchars($folder) ?></title>
     <link rel="stylesheet" href="assets/style.css">
+    <script src="https://hinkhoj.com/api/hindi-typing/js/keyboard.js"></script>
+    <link rel="stylesheet" href="https://hinkhoj.com/api/hindi-typing/css/keyboard.css" />
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -121,35 +127,51 @@ $_SESSION['quiz_folder'] = $folder;
         .nav-buttons button:hover, .submit-btn:hover {
             background-color: #2980b9;
         }
+        label {
+            font-weight: bold;
+            margin-bottom: 6px;
+            display: inline-block;
+        }
     </style>
     <script>
         // 🛡 Handle browser back-forward navigation issue
         if (performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
             location.href = "index.php";
         }
+
+        function showSlide(index) {
+            const slides = document.querySelectorAll('.slide');
+            if (index < 0 || index >= slides.length) return;
+            slides.forEach(s => s.classList.remove('active'));
+            slides[index].classList.add('active');
+        }
     </script>
 </head>
 <body>
 <div class="container">
-    <h2>Quiz: <?= htmlspecialchars($folder) ?></h2>
+    <h2>Quiz: <?= htmlspecialchars($folder) ?> | क्विज़: <?= htmlspecialchars($folder) ?></h2>
     <form method="POST" action="result.php" id="quizForm">
         <div class="slide-container">
             <?php foreach ($selectedImages as $index => $img): ?>
                 <div class="slide<?= $index === 0 ? ' active' : '' ?>" id="slide<?= $index ?>">
-                    <h3>Question <?= $index + 1 ?> of <?= count($selectedImages) ?></h3>
+                    <h3>Question <?= $index + 1 ?> of <?= count($selectedImages) ?> <br> प्रश्न <?= $index + 1 ?> / <?= count($selectedImages) ?></h3>
                     <img src="<?= $imgPath . $img ?>" alt="<?= $img ?>" class="quiz-image"><br>
-                    <input type="text" name="q<?= $index ?>" class="quiz-input" placeholder="Enter your answer...">
+
+                    <label for="q<?= $index ?>">Answer / उत्तर:</label><br>
+                    <script>CreateHindiTextBox("q<?= $index ?>");</script>
                     <input type="hidden" name="img<?= $index ?>" value="<?= $img ?>">
+
                     <div class="nav-buttons">
                         <?php if ($index > 0): ?>
-                            <button type="button" onclick="showSlide(<?= $index - 1 ?>)">&larr; Prev</button>
+                            <button type="button" onclick="showSlide(<?= $index - 1 ?>)">&larr; Prev / पिछला</button>
                         <?php else: ?>
                             <span></span>
                         <?php endif; ?>
+
                         <?php if ($index < count($selectedImages) - 1): ?>
-                            <button type="button" onclick="showSlide(<?= $index + 1 ?>)">Next &rarr;</button>
+                            <button type="button" onclick="showSlide(<?= $index + 1 ?>)">Next &rarr; अगला</button>
                         <?php else: ?>
-                            <button type="submit" class="submit-btn">Submit Quiz</button>
+                            <button type="submit" class="submit-btn">Submit Quiz / क्विज़ जमा करें</button>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -157,13 +179,5 @@ $_SESSION['quiz_folder'] = $folder;
         </div>
     </form>
 </div>
-<script>
-function showSlide(index) {
-    const slides = document.querySelectorAll('.slide');
-    if (index < 0 || index >= slides.length) return;
-    slides.forEach(s => s.classList.remove('active'));
-    slides[index].classList.add('active');
-}
-</script>
 </body>
 </html>

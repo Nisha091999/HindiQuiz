@@ -1,7 +1,8 @@
 <?php
+header('Content-Type: text/html; charset=utf-8');
 session_start();
 
-// Prevent direct access without POST and valid session
+// Access validation
 if (
     $_SERVER['REQUEST_METHOD'] !== 'POST' ||
     !isset($_SESSION['user']) ||
@@ -13,7 +14,7 @@ if (
     exit();
 }
 
-// Set flag to prevent re-entering quiz.php
+// Prevent repeat quiz attempt
 $_SESSION['quiz_done'] = true;
 
 $user = $_SESSION['user'];
@@ -22,39 +23,55 @@ $images = $_SESSION['quiz_images'];
 $answers = $_SESSION['quiz_answers'];
 $sessionId = session_id();
 $time = date('d/m/Y H:i:s');
-$score = 0;
-$total = count($images);
 
+$total = count($images);
+$totalSimilarity = 0;
 $results = [];
+
 for ($i = 0; $i < $total; $i++) {
     $img = $_POST["img$i"] ?? '';
     $response = trim($_POST["q$i"] ?? '');
 
-    // Skip invalid input
     if (!isset($answers[$img])) continue;
 
-    $correct = in_array(strtolower($response), array_map('strtolower', $answers[$img]));
-    if ($correct) $score++;
+    $correctAnswers = $answers[$img];
+    $maxSimilarity = 0;
+    $userAnswerLower = mb_strtolower($response, 'UTF-8');
 
+    foreach ($correctAnswers as $correctAnswer) {
+        similar_text($userAnswerLower, mb_strtolower($correctAnswer, 'UTF-8'), $percent);
+        if ($percent > $maxSimilarity) {
+            $maxSimilarity = $percent;
+        }
+    }
+
+    $scoreForQuestion = round($maxSimilarity, 2);
+    $totalSimilarity += $scoreForQuestion;
+
+    $isCorrect = $scoreForQuestion >= 85; // ✅ 85% threshold
     $results[] = [
         'img' => $img,
         'response' => $response,
-        'correct_answers' => implode(', ', $answers[$img]),
-        'correct' => $correct ? 'Y' : 'N'
+        'correct_answers' => implode(', ', $correctAnswers),
+        'correct' => $isCorrect ? '✔️ सही / Correct' : '❌ गलत / Wrong',
+        'score' => "$scoreForQuestion%"
     ];
 }
 
-// Save score to file
-$scoreLine = "$level,$user,$time,$sessionId,$score/$total\n";
-file_put_contents("AppData/Scores.txt", $scoreLine, FILE_APPEND);
+$averageScore = $total > 0 ? round($totalSimilarity / $total, 2) : 0;
 
-// Clear quiz session data so it can't be reused
+// Save average score summary to file
+$line = "$level,$user,$time,$sessionId,$averageScore%\n";
+file_put_contents("AppData/Scores.txt", $line, FILE_APPEND);
+
+// Clear quiz session data
 unset($_SESSION['quiz_images'], $_SESSION['quiz_answers'], $_SESSION['quiz_folder'], $_SESSION['allow_quiz']);
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="hi">
 <head>
-    <title>Quiz Results</title>
+    <meta charset="utf-8">
+    <title>Quiz Results | क्विज़ परिणाम</title>
     <link rel="stylesheet" href="assets/style.css">
     <style>
         body {
@@ -63,13 +80,12 @@ unset($_SESSION['quiz_images'], $_SESSION['quiz_answers'], $_SESSION['quiz_folde
             padding: 30px;
         }
         .container {
-            max-width: 800px;
+            max-width: 850px;
             margin: auto;
             background: white;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            position: relative;
         }
         .logout-wrapper {
             display: flex;
@@ -84,19 +100,9 @@ unset($_SESSION['quiz_images'], $_SESSION['quiz_answers'], $_SESSION['quiz_folde
             border-radius: 6px;
             color: white;
             cursor: pointer;
-            transition: background-color 0.3s;
         }
         .logout-btn:hover {
             background-color: #c0392b;
-        }
-        @media (max-width: 600px) {
-            .logout-btn {
-                font-size: 14px;
-                padding: 8px 14px;
-            }
-            .logout-wrapper {
-                justify-content: center;
-            }
         }
         table {
             width: 100%;
@@ -107,6 +113,7 @@ unset($_SESSION['quiz_images'], $_SESSION['quiz_answers'], $_SESSION['quiz_folde
             border: 1px solid #ccc;
             padding: 10px;
             text-align: center;
+            vertical-align: middle;
         }
         th {
             background-color: #3498db;
@@ -117,11 +124,10 @@ unset($_SESSION['quiz_images'], $_SESSION['quiz_answers'], $_SESSION['quiz_folde
         }
     </style>
     <script>
-        // Prevent browser back or forward navigation to quiz
+        // Block back navigation
         if (performance.getEntriesByType("navigation")[0]?.type === "back_forward") {
             location.href = "index.php";
         }
-
         history.pushState(null, "", location.href);
         window.addEventListener("popstate", function () {
             history.pushState(null, "", location.href);
@@ -129,24 +135,28 @@ unset($_SESSION['quiz_images'], $_SESSION['quiz_answers'], $_SESSION['quiz_folde
     </script>
 </head>
 <body>
-
 <div class="container">
     <div class="logout-wrapper">
         <form method="POST" action="logout.php">
-            <button type="submit" class="logout-btn">Logout</button>
+            <button type="submit" class="logout-btn">Logout / लॉगआउट</button>
         </form>
     </div>
 
-    <h2>Quiz Results for <?= htmlspecialchars($user) ?></h2>
-    <p><strong>Score:</strong> <?= $score ?>/<?= $total ?></p>
+    <h2>Quiz Results for <?= htmlspecialchars($user) ?> | <span lang="hi">प्रश्नोत्तरी परिणाम</span></h2>
+    <p><strong>Total Score / कुल स्कोर:</strong> <?= $averageScore ?>%</p>
+
     <table>
+        <thead>
         <tr>
-            <th>Q#</th>
-            <th>Image</th>
-            <th>Your Answer</th>
-            <th>Correct Answers</th>
-            <th>Result</th>
+            <th>#</th>
+            <th>Image / चित्र</th>
+            <th>Your Answer / आपका उत्तर</th>
+            <th>Correct Answers / सही उत्तर</th>
+            <th>Result / परिणाम</th>
+            <th>Score (%) / स्कोर (%)</th>
         </tr>
+        </thead>
+        <tbody>
         <?php foreach ($results as $i => $r): ?>
         <tr>
             <td><?= $i + 1 ?></td>
@@ -154,10 +164,11 @@ unset($_SESSION['quiz_images'], $_SESSION['quiz_answers'], $_SESSION['quiz_folde
             <td><?= htmlspecialchars($r['response']) ?></td>
             <td><?= htmlspecialchars($r['correct_answers']) ?></td>
             <td><?= $r['correct'] ?></td>
+            <td><?= $r['score'] ?></td>
         </tr>
         <?php endforeach; ?>
+        </tbody>
     </table>
 </div>
-
 </body>
 </html>

@@ -1,4 +1,4 @@
-Acchha.png,Acchha
-Bachha.png,Bachha
-Ichha.png,Ichha
-Kaccha.png,Kaccha
+Acchha.png,Achchha,achchaa,अच्छा
+Bachha.png,bachchaa,बच्चा
+Ichha.png,Ichchha,ichchaa ,इच्छा
+Kaccha.png,Kachchaa,कच्चा
