@@ -1,16 +1,13 @@
 <?php
 session_start();
 
-// 🛡️ Block access if not logged in
+// Access check
 if (!isset($_SESSION['user'])) {
     header("Location: index.php");
     exit();
 }
 
-// ✅ Allow access to quiz once, and clear old flag so user can retake
-$_SESSION['allow_quiz'] = true;
-unset($_SESSION['quiz_done']); // Enable fresh quiz session
-
+// Menu folders for oral half letters
 $menus = [
     ["name" => "Ka half words", "folder" => "KaImages"],
     ["name" => "Ch Half words", "folder" => "ChaImages"],
@@ -24,7 +21,7 @@ $menus = [
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Select Quiz</title>
+    <title>Select Oral Half Letters Quiz</title>
     <link rel="stylesheet" href="assets/style.css">
     <style>
         body {
@@ -78,8 +75,8 @@ $menus = [
 
     <div class="grid">
         <?php foreach ($menus as $m): ?>
-            <form method="POST" action="quiz.php">
-                <input type="hidden" name="folder" value="<?= $m['folder'] ?>">
+            <form method="POST" action="oral_half_letters.php" style="margin:0;">
+                <input type="hidden" name="folder" value="<?= htmlspecialchars($m['folder']) ?>">
                 <button type="submit" class="button"><?= htmlspecialchars($m['name']) ?></button>
             </form>
         <?php endforeach; ?>

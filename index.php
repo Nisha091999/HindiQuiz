@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['level'] = $l;
         $_SESSION['start'] = time();
         file_put_contents("AppData/userlogfile.txt", "$l $u " . date('d/m/Y H:i:s') . " login\n", FILE_APPEND);
-        header("Location: menu.php"); exit();
+        header("Location: MainMenu.php"); exit();
     } else {
         $err = "Invalid credentials.";
     }

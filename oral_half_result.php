@@ -2,11 +2,10 @@
 session_start();
 $_SESSION['quiz_done'] = true;
 
-// Validate access
 if (
     !isset($_SESSION['user']) || 
-    !isset($_SESSION['quiz_images']) || 
-    !isset($_SESSION['quiz_answers']) ||
+    !isset($_SESSION['oral_quiz_images']) || 
+    !isset($_SESSION['oral_quiz_answers']) ||
     $_SERVER['REQUEST_METHOD'] !== 'POST' ||
     empty($_POST["img0"])
 ) {
@@ -16,8 +15,9 @@ if (
 
 $user      = $_SESSION['user'];
 $level     = $_SESSION['level'];
-$images    = $_SESSION['quiz_images'];
-$answers   = $_SESSION['quiz_answers'];
+$images    = $_SESSION['oral_quiz_images'];
+$answers   = $_SESSION['oral_quiz_answers'];
+$folder    = $_SESSION['oral_quiz_folder'];
 $sessionId = session_id();
 $time      = date('d/m/Y H:i:s');
 
@@ -43,7 +43,7 @@ $totalPoints = 0;
 $totalPossible = count($images);
 
 foreach ($images as $i => $img) {
-    $response = trim($_POST["answer$i"] ?? '');
+    $response = trim($_POST["response$i"] ?? '');
     if (!isset($answers[$img])) continue;
 
     $bestMatch = 0;
@@ -52,7 +52,6 @@ foreach ($images as $i => $img) {
         $bestMatch = max($bestMatch, $match);
     }
 
-    // 🎯 Scoring logic
     if ($bestMatch >= 99.9) {
         $points = 1.0;
     } elseif ($bestMatch >= 85) {
@@ -76,71 +75,26 @@ foreach ($images as $i => $img) {
 }
 
 $finalPercentage = round(($totalPoints / $totalPossible) * 100, 2);
-$scoreLine = "$level,$user,$time,$sessionId,$totalPoints/$totalPossible,$finalPercentage%\n";
+$scoreLine = "$level,$user,$time,$sessionId,$totalPoints/$totalPossible,$finalPercentage% (Oral Mode)\n";
 file_put_contents("AppData/Scores.txt", $scoreLine, FILE_APPEND);
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Quiz Results</title>
+    <title>Oral Quiz Results</title>
     <link rel="stylesheet" href="assets/style.css">
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f2f2f2;
-            padding: 30px;
-        }
-        .container {
-            max-width: 800px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        .logout-wrapper {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 15px;
-        }
-        .logout-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #e74c3c;
-            border: none;
-            border-radius: 6px;
-            color: white;
-            cursor: pointer;
-        }
-        .logout-btn:hover {
-            background-color: #c0392b;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 25px;
-        }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 12px;
-            text-align: center;
-        }
-        th {
-            background-color: #3498db;
-            color: white;
-        }
-        .speaker-button {
-            background-color: #2ecc71;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .speaker-button:hover {
-            background-color: #27ae60;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #f2f2f2; padding: 30px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .logout-wrapper { display: flex; justify-content: flex-end; margin-bottom: 15px; }
+        .logout-btn { padding: 10px 20px; font-size: 16px; background-color: #e74c3c; border: none; border-radius: 6px; color: white; cursor: pointer; }
+        .logout-btn:hover { background-color: #c0392b; }
+        table { width: 100%; border-collapse: collapse; margin-top: 25px; }
+        th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
+        th { background-color: #3498db; color: white; }
+        .speaker-button { background-color: #2ecc71; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+        .speaker-button:hover { background-color: #27ae60; }
     </style>
     <script>
         function extractLastWord(text) {
@@ -152,11 +106,8 @@ file_put_contents("AppData/Scores.txt", $scoreLine, FILE_APPEND);
 
         function loadVoices() {
             const allVoices = speechSynthesis.getVoices();
-            hindiFemaleVoice = allVoices.find(v =>
-                v.lang === 'hi-IN' && /female/i.test(v.name)
-            ) || allVoices.find(v =>
-                v.lang === 'hi-IN'
-            );
+            hindiFemaleVoice = allVoices.find(v => v.lang === 'hi-IN' && /female/i.test(v.name)) ||
+                               allVoices.find(v => v.lang === 'hi-IN');
         }
 
         function speakResult(index) {
@@ -201,7 +152,7 @@ file_put_contents("AppData/Scores.txt", $scoreLine, FILE_APPEND);
             </form>
         </div>
 
-        <h2>Quiz Results for <?= htmlspecialchars($user) ?></h2>
+        <h2>Oral Quiz Results for <?= htmlspecialchars($user) ?></h2>
         <p><strong>Score:</strong> <?= $totalPoints ?>/<?= $totalPossible ?> (<?= $finalPercentage ?>%)</p>
         <p><strong>Use 🔊icon on each row to hear your response and the correct answer</strong></p>
 
@@ -223,10 +174,7 @@ file_put_contents("AppData/Scores.txt", $scoreLine, FILE_APPEND);
                 <tr>
                     <td><?= $i + 1 ?></td>
                     <td>
-                        <img src="<?= htmlspecialchars("AppFiles/images/$level/" . $_SESSION['quiz_folder'] . "/" . $r['img']) ?>" 
-                             alt="Q<?= $i + 1 ?>" 
-                             width="75" height="75" 
-                             style="object-fit: cover; border: 1px solid #ccc;" />
+                        <img src="<?= htmlspecialchars("AppFiles/images/$level/$folder/" . $r['img']) ?>" alt="Q<?= $i + 1 ?>" width="75" height="75" style="object-fit: cover; border: 1px solid #ccc;" />
                     </td>
                     <td><?= htmlspecialchars($r['response']) ?></td>
                     <td><?= htmlspecialchars($r['correct_answers']) ?></td>
