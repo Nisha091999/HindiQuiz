@@ -21,13 +21,18 @@ $folder    = $_SESSION['oral_quiz_folder'];
 $sessionId = session_id();
 $time      = date('d/m/Y H:i:s');
 
+function cleanText($text) {
+    return preg_replace('/[^\p{L}\p{N}]/u', '', mb_strtolower(trim($text)));
+}
+
 function calculateMatchPercentage($userAnswer, $correctAnswer) {
-    if (!$userAnswer || !$correctAnswer) return 0;
+    $userClean = cleanText($userAnswer);
+    $correctClean = cleanText($correctAnswer);
 
-    $userChars = preg_split('//u', $userAnswer, null, PREG_SPLIT_NO_EMPTY);
-    $correctChars = preg_split('//u', $correctAnswer, null, PREG_SPLIT_NO_EMPTY);
+    $userChars = preg_split('//u', $userClean, null, PREG_SPLIT_NO_EMPTY);
+    $correctChars = preg_split('//u', $correctClean, null, PREG_SPLIT_NO_EMPTY);
+
     $matchCount = 0;
-
     foreach ($userChars as $i => $char) {
         if (isset($correctChars[$i]) && $char === $correctChars[$i]) {
             $matchCount++;
@@ -37,6 +42,7 @@ function calculateMatchPercentage($userAnswer, $correctAnswer) {
     $maxLength = max(count($userChars), count($correctChars));
     return $maxLength ? round(($matchCount / $maxLength) * 100, 2) : 0;
 }
+
 
 $results = [];
 $totalPoints = 0;
@@ -52,15 +58,16 @@ foreach ($images as $i => $img) {
         $bestMatch = max($bestMatch, $match);
     }
 
-    if ($bestMatch >= 99.9) {
+        if ($bestMatch === 100.0) {
         $points = 1.0;
     } elseif ($bestMatch >= 85) {
         $points = 0.75;
     } elseif ($bestMatch >= 60) {
         $points = 0.5;
     } else {
-        $points = 0;
+        $points = 0.0;
     }
+
 
     $totalPoints += $points;
 
