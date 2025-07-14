@@ -1,0 +1,10 @@
+मेरा नाम राम है,"my name is Ram", "I am Ram"
+मैं अपने छोटे भाई, माताजी, और पिताजी के साथ रहता हूँ, "I live with my younger brother, my mother, and my father.","I live with my mother, father and younger brother"
+मैं अपने भाई के साथ ताश खेलता हूँ, "I play cards with my brother", "My brother and I play cards"
+मुझे अंग्रेजी, गणित और भौतिक शास्त्र अच्छा लगता है, "I like English, Maths and Physics" 
+मेरे घर के बगीचे में फवारा लगा हैं,"There is a fountain in my garden"
+मंदिर में पण्डितजी प्रसाद देते हैं, "Panditji gives Prasad in the temple", "The priest gives Prasad in the temple"
+हमारा छत लाल रंग का है,"our roof is red", "we have a red roof", "our roof is red in color"
+मेरा सोने के कमरे की खिड़की से पहाड दिकता हैं,"I can see the mountains from my bedroom window",
+मैंने चिड़ियाघर में एक बाघ, हाथी और दो शेर देखे,"I saw a tiger, elephant and two lions in the zoo"
+मैं डोउब्लेरोटी मखन और मुरब्बा के साथ  खाता हूँ,"I eat bread with butter and jam"
