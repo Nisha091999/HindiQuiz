@@ -15,7 +15,7 @@ if (
 $user = $_SESSION['user'] ?? 'Guest';
 $time = date('d/m/Y H:i:s');
 
-// Normalize text (lowercase, remove punctuation, extra spaces)
+// Normalize text
 function normalizeText($text) {
     $text = mb_strtolower($text);
     $text = preg_replace('/[^\p{L}\p{N}\s]/u', '', $text);
@@ -23,7 +23,7 @@ function normalizeText($text) {
     return trim($text);
 }
 
-// Token-based match percentage
+// Token-based match
 function calculateMatchPercentage($userAnswer, $correctAnswer) {
     $userTokens = explode(' ', normalizeText($userAnswer));
     $correctTokens = explode(' ', normalizeText($correctAnswer));
@@ -78,7 +78,6 @@ foreach ($_POST as $key => $value) {
 
 $finalPercentage = $totalQuestions ? round(($totalPoints / $totalQuestions) * 100, 2) : 0;
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -158,11 +157,16 @@ $finalPercentage = $totalQuestions ? round(($totalPoints / $totalQuestions) * 10
 
     function loadVoices() {
       const allVoices = speechSynthesis.getVoices();
+      window.hindiVoice = allVoices.find(v => v.lang === 'hi-IN');
       window.engVoice = allVoices.find(v => v.lang === 'en-US');
     }
 
     function speak(index) {
       const data = window.quizResults[index];
+
+      const hindiText = new SpeechSynthesisUtterance(`हिंदी वाक्य: ${data.hindi}`);
+      hindiText.voice = window.hindiVoice;
+
       const userText = data.user.trim() === "" ? "Your translation is empty" : `Your translation: ${data.user}`;
       const correctText = `Correct answer: ${data.correct}`;
 
@@ -173,8 +177,13 @@ $finalPercentage = $totalQuestions ? round(($totalPoints / $totalQuestions) * 10
       correct.voice = window.engVoice;
 
       speechSynthesis.cancel();
-      speechSynthesis.speak(user);
-      user.onend = () => setTimeout(() => speechSynthesis.speak(correct), 400);
+      speechSynthesis.speak(hindiText);
+      hindiText.onend = () => {
+        setTimeout(() => {
+          speechSynthesis.speak(user);
+          user.onend = () => setTimeout(() => speechSynthesis.speak(correct), 400);
+        }, 400);
+      };
     }
 
     window.speechSynthesis.onvoiceschanged = loadVoices;
@@ -220,6 +229,7 @@ $finalPercentage = $totalQuestions ? round(($totalPoints / $totalQuestions) * 10
           <script>
             window.quizResults = window.quizResults || [];
             window.quizResults[<?= $i ?>] = {
+              hindi: <?= json_encode($r['question']) ?>,
               user: <?= json_encode($r['response']) ?>,
               correct: <?= json_encode($r['correct_answers']) ?>
             };
