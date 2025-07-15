@@ -83,9 +83,9 @@
             const activity = clickedButton.value;
 
             const oralMap = {
-                "Half Letters": "oral_half_menu.php",
+                "Half Letters": "oral_half_letter/oral_half_menu.php",
                 "Complete the Sentence": "oral_complete_sentence.php",
-                "Translate to English": "oral_translate_to_english.php",
+                "Translate to English": "oral_tran_HinToEng/oral_TranToEnglish.php",
                 "Translate to Hindi": "oral_translate_to_hindi.php"
             };
 
