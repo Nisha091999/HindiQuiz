@@ -92,8 +92,8 @@
             const writtenMap = {
                 "Half Letters": "HalfLetterWMenu.php",
                 "Complete the Sentence": "CompSentW.php",
-                "Translate to English": "write_Tanslation/TranslateToEnglish.php",
-                "Translate to Hindi": "write_TranHinToEng/TranslateToHindi.php"
+                "Translate to English": "write_TrantoEng/TranslateToEnglish.php",
+                "Translate to Hindi": "write_TrantoHin/TranslateToHindi.php"
             };
 
             if (mode === 'oral') {

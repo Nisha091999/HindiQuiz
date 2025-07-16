@@ -1,2 +1,10 @@
-I play cricket every Sunday.
-She is reading a book.
+My name is Ravi. , "मेरा नाम रवि है।", "मैं रवि हूँ।"
+I live with my parents and sister. , "मैं अपने माता-पिता और बहन के साथ रहता हूँ।", "मैं अपने परिवार के साथ रहता हूँ।"
+He is playing cricket with his friends. , "वह अपने दोस्तों के साथ क्रिकेट खेल रहा है।", "वह दोस्तों के साथ क्रिकेट खेलता है।"
+I like to read books in the evening., "मुझे शाम को किताबें पढ़ना पसंद है।", "मैं शाम को किताबें पढ़ना पसंद करता हूँ।"
+There is a big tree in front of our house. ,"हमारे घर के सामने एक बड़ा पेड़ है।"
+The teacher is explaining the lesson. ,"अध्यापक पाठ समझा रहे हैं।", "शिक्षक पाठ पढ़ा रहे हैं।"
+We are going to the market tomorrow. , "हम कल बाजार जा रहे हैं।", "हम कल मार्केट जाएंगे।"
+She drinks tea every morning. , "वह हर सुबह चाय पीती है।"
+The children are playing in the garden. , "बच्चे बगीचे में खेल रहे हैं।", "बच्चे बग़ीचे में खेल रहे हैं।"
+I eat rice and vegetables for lunch. , "मैं दोपहर में चावल और सब्ज़ी खाता हूँ।", "मैं लंच में चावल और सब्ज़ी खाता हूँ।"
