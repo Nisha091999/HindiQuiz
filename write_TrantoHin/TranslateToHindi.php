@@ -1,24 +1,28 @@
 <?php
 session_start();
 
+// Load English sentences only (remove Python/AI placeholder stuff)
 $lines = @file("../AppFiles/Translations/EngToHinAnswers.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 if (!$lines) {
     die("Could not read questions file.");
 }
 
-$selectedSet = [];
+$questions = [];
 foreach ($lines as $line) {
-    $sentence = trim($line);
-    $selectedSet[] = [
-        'english' => $sentence,
-        'answers' => ["(AI-based match only)"]
-    ];
+    $parts = explode(',', $line);
+    $english = trim($parts[0]);  // Only take the part before the first comma
+    $questions[] = ['english' => $english, 'answers' => ["(manual input)"]];
 }
 
-// Store for results
+
+shuffle($questions);
+$selectedSet = array_slice($questions, 0, 10);
+
+// Store for result page
 $_SESSION['translate_eng_questions'] = array_column($selectedSet, 'english');
 $_SESSION['translate_eng_answers'] = array_column($selectedSet, 'answers');
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

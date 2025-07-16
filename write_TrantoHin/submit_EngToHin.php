@@ -1,191 +1,241 @@
 <?php
 session_start();
+$_SESSION['quiz_done'] = true;
 
-$api_url = "http://127.0.0.1:5000/hindi_similarity";
-
-$total = count($_SESSION['translate_eng_questions'] ?? []);
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' || $total === 0) {
+// Redirect if accessed incorrectly
+if (!isset($_SESSION['user']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../index.php");
     exit();
 }
 
-$results = [];
-$totalScore = 0;
+$user = $_SESSION['user'] ?? 'Guest';
+$time = date('d/m/Y H:i:s');
 
-for ($i = 0; $i < $total; $i++) {
-    $english_sentence = $_POST["question$i"] ?? '';
-    $user_answer = trim($_POST["answer$i"] ?? '');
-
-    if ($user_answer === '') {
-        $results[] = [
-            'english' => $english_sentence,
-            'user' => '(No answer given)',
-            'expected' => ['No expected answers'],
-            'score' => 0,
-            'pass' => false
-        ];
-        continue;
-    }
-
-    $post_data = [
-        'english_sentence' => $english_sentence,
-        'user_answer' => $user_answer
-    ];
-
-    $ch = curl_init($api_url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($post_data));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-    $response = curl_exec($ch);
-    $curl_err = curl_error($ch);
-    curl_close($ch);
-
-    if ($curl_err) {
-        $results[] = [
-            'english' => $english_sentence,
-            'user' => $user_answer,
-            'expected' => ['Error contacting AI backend'],
-            'score' => 0,
-            'pass' => false
-        ];
-        continue;
-    }
-
-    $data = json_decode($response, true);
-
-    if (!$data || !isset($data['final_score'], $data['expected_translations'])) {
-        $results[] = [
-            'english' => $english_sentence,
-            'user' => $user_answer,
-            'expected' => ['Invalid response from AI backend'],
-            'score' => 0,
-            'pass' => false
-        ];
-        continue;
-    }
-
-    $score = floatval($data['final_score']);
-    $expected_answers = $data['expected_translations'];
-
-    $pass = $score >= 60;
-    $totalScore += $score;
-
-    $results[] = [
-        'english' => $english_sentence,
-        'user' => $user_answer,
-        'expected' => $expected_answers,
-        'score' => round($score, 2),
-        'pass' => $pass
-    ];
+function normalizeText($text) {
+    $text = mb_strtolower($text);
+    $text = preg_replace('/[^\p{L}\p{N}\s]/u', '', $text);
+    $text = preg_replace('/\s+/', ' ', $text);
+    return trim($text);
 }
 
-$averageScore = $total ? round($totalScore / $total, 2) : 0;
-?>
+function calculateMatchPercentage($userAnswer, $correctAnswer) {
+    $userTokens = explode(' ', normalizeText($userAnswer));
+    $correctTokens = explode(' ', normalizeText($correctAnswer));
 
+    $matchCount = 0;
+    foreach ($userTokens as $token) {
+        if (in_array($token, $correctTokens)) {
+            $matchCount++;
+        }
+    }
+
+    $maxTokens = max(count($userTokens), count($correctTokens));
+    return $maxTokens ? round(($matchCount / $maxTokens) * 100, 2) : 0;
+}
+
+$lines = file("../AppFiles/Translations/EngToHinAnswers.txt", FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+$answerMap = [];
+foreach ($lines as $line) {
+    $parts = explode(',', $line);
+    $english = trim($parts[0]);
+    $answers = array_map(function($a) {
+        return trim(trim($a), '"');
+    }, array_slice($parts, 1));
+    $answerMap[$english] = $answers;
+}
+
+$results = [];
+$totalPoints = 0;
+$totalQuestions = 0;
+
+foreach ($_POST as $key => $value) {
+    if (strpos($key, 'answer') === 0) {
+        $index = substr($key, 6);
+        $response = trim($value);
+        $question = $_POST["question$index"] ?? '';
+        $correctAnswers = $answerMap[$question] ?? [];
+
+        $bestMatch = 0;
+        foreach ($correctAnswers as $correctAns) {
+            $match = calculateMatchPercentage($response, $correctAns);
+            $bestMatch = max($bestMatch, $match);
+        }
+
+        $points = 0;
+        if ($bestMatch >= 99.9) $points = 1.0;
+        elseif ($bestMatch >= 85) $points = 0.75;
+        elseif ($bestMatch >= 60) $points = 0.5;
+
+        $totalPoints += $points;
+        $totalQuestions++;
+
+        $results[] = [
+            'question' => $question,
+            'response' => $response,
+            'correct_answers' => implode(', ', $correctAnswers),
+            'percent' => $bestMatch,
+            'points' => $points,
+            'correct' => $points > 0 ? '✔' : '✘'
+        ];
+    }
+}
+
+$finalPercentage = $totalQuestions ? round(($totalPoints / $totalQuestions) * 100, 2) : 0;
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>English to Hindi Translation Results</title>
-<style>
-  body { font-family: Arial, sans-serif; background: #f5f7fa; padding: 25px; }
-  .container { max-width: 900px; margin: auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-  h2 { text-align: center; color: #333; }
-  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-  th, td { border: 1px solid #ccc; padding: 12px; text-align: left; vertical-align: top; }
-  th { background: #2c3e50; color: #fff; }
-  tr.pass { background: #d4edda; }
-  tr.fail { background: #f8d7da; }
-  .score { font-weight: bold; font-size: 1.1em; }
-  .expected-answers { font-style: italic; color: #555; }
-  .speaker-button {
-      background-color: #27ae60; color: white; border: none; padding: 6px 10px;
-      font-size: 14px; border-radius: 6px; cursor: pointer;
-  }
-  .speaker-button:hover { background-color: #1e874b; }
-</style>
-<script>
-  // Setup voices for Hindi and English
-  let hindiVoice = null, engVoice = null;
-  function loadVoices() {
-    const voices = speechSynthesis.getVoices();
-    hindiVoice = voices.find(v => v.lang.startsWith('hi')) || null;
-    engVoice = voices.find(v => v.lang.startsWith('en')) || null;
-  }
-  speechSynthesis.onvoiceschanged = loadVoices;
-  window.onload = loadVoices;
-
-  // Speak Hindi sentence, user answer, and expected answers
-  function speak(index) {
-    const data = window.quizResults[index];
-    if (!hindiVoice || !engVoice) {
-      alert("Speech synthesis voices not loaded yet.");
-      return;
+  <meta charset="UTF-8">
+  <title>Translation Results</title>
+  <link rel="stylesheet" href="../assets/style.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+      padding: 30px;
+    }
+    .container {
+      max-width: 950px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 25px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      font-size: 15px;
+      text-align: center;
+    }
+    th {
+      background-color: #2c3e50;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    .speaker-button {
+      background-color: #27ae60;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .speaker-button:hover {
+      background-color: #1e874b;
+    }
+    .score {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .logout-btn {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      font-size: 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .logout-btn:hover {
+      background-color: #c0392b;
+    }
+    .top-right {
+      text-align: right;
+      margin-bottom: 10px;
+    }
+  </style>
+  <script>
+    function loadVoices() {
+      const allVoices = speechSynthesis.getVoices();
+      window.hindiVoice = allVoices.find(v => v.lang === 'hi-IN');
+      window.engVoice = allVoices.find(v => v.lang === 'en-US');
     }
 
-    const hindiText = new SpeechSynthesisUtterance(`English sentence: ${data.english}`);
-    hindiText.voice = engVoice;
+    function speak(index) {
+      const data = window.quizResults[index];
 
-    const userText = new SpeechSynthesisUtterance(`Your translation: ${data.user}`);
-    userText.voice = hindiVoice;
+      const hindiText = new SpeechSynthesisUtterance(`अंग्रेज़ी वाक्य: ${data.hindi}`);
+      hindiText.voice = window.engVoice;
 
-    const expectedText = new SpeechSynthesisUtterance(`Expected answers: ${data.expected.join(', ')}`);
-    expectedText.voice = hindiVoice;
+      const userText = data.user.trim() === "" ? "Your translation is empty" : `Your translation: ${data.user}`;
+      const correctText = `Correct answer: ${data.correct}`;
 
-    speechSynthesis.cancel();
-    speechSynthesis.speak(hindiText);
-    hindiText.onend = () => {
-      setTimeout(() => {
-        speechSynthesis.speak(userText);
-        userText.onend = () => setTimeout(() => speechSynthesis.speak(expectedText), 400);
-      }, 400);
-    };
-  }
-</script>
+      const user = new SpeechSynthesisUtterance(userText);
+      const correct = new SpeechSynthesisUtterance(correctText);
+
+      user.voice = window.hindiVoice;
+      correct.voice = window.hindiVoice;
+
+      speechSynthesis.cancel();
+      speechSynthesis.speak(hindiText);
+      hindiText.onend = () => {
+        setTimeout(() => {
+          speechSynthesis.speak(user);
+          user.onend = () => setTimeout(() => speechSynthesis.speak(correct), 400);
+        }, 400);
+      };
+    }
+
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+    window.addEventListener('load', loadVoices);
+  </script>
 </head>
 <body>
 <div class="container">
-  <h2>English to Hindi Translation Results</h2>
-  <p class="score">Average Score: <?= $averageScore ?>%</p>
+  <div class="top-right">
+    <form action="../logout.php" method="post">
+      <button class="logout-btn" type="submit">Logout</button>
+    </form>
+  </div>
+
+  <h2>English to Hindi Translation Results - <?= htmlspecialchars($user) ?></h2>
+  <p class="score"><strong>Score:</strong> <?= $totalPoints ?>/<?= $totalQuestions ?> (<?= $finalPercentage ?>%)</p>
+
   <table>
     <thead>
       <tr>
         <th>#</th>
         <th>English Sentence</th>
         <th>Your Hindi Translation</th>
-        <th>Expected Answers (AI)</th>
-        <th>Score (%)</th>
-        <th>Status</th>
+        <th>Expected Answers</th>
+        <th>Match %</th>
+        <th>Points</th>
+        <th>✔/✘</th>
         <th>🔊</th>
       </tr>
     </thead>
     <tbody>
-      <?php foreach ($results as $i => $r): ?>
-      <tr class="<?= $r['pass'] ? 'pass' : 'fail' ?>">
+    <?php foreach ($results as $i => $r): ?>
+      <tr>
         <td><?= $i + 1 ?></td>
-        <td><?= htmlspecialchars($r['english']) ?></td>
-        <td><?= htmlspecialchars($r['user']) ?></td>
-        <td class="expected-answers">
-          <?php foreach ($r['expected'] as $ans): ?>
-            <?= htmlspecialchars($ans) ?><br>
-          <?php endforeach; ?>
-        </td>
-        <td><?= $r['score'] ?></td>
-        <td><?= $r['pass'] ? '✔ Pass' : '✘ Fail' ?></td>
+        <td><?= htmlspecialchars($r['question']) ?></td>
+        <td><?= htmlspecialchars($r['response']) ?></td>
+        <td><?= htmlspecialchars($r['correct_answers']) ?></td>
+        <td><?= $r['percent'] ?>%</td>
+        <td><?= $r['points'] ?></td>
+        <td><?= $r['correct'] ?></td>
         <td>
           <button class="speaker-button" onclick="speak(<?= $i ?>)">🔊</button>
           <script>
             window.quizResults = window.quizResults || [];
             window.quizResults[<?= $i ?>] = {
-              english: <?= json_encode($r['english']) ?>,
-              user: <?= json_encode($r['user']) ?>,
-              expected: <?= json_encode($r['expected']) ?>
+              hindi: <?= json_encode($r['question']) ?>,
+              user: <?= json_encode($r['response']) ?>,
+              correct: <?= json_encode($r['correct_answers']) ?>
             };
           </script>
         </td>
       </tr>
-      <?php endforeach; ?>
+    <?php endforeach; ?>
     </tbody>
   </table>
 </div>
