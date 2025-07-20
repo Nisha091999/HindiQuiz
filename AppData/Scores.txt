@@ -61,3 +61,6 @@ L2,user5,09/07/2025 17:28:56,vlrm50b4hp5gil22h9nr9mjfhk,3.5/4,87.5% (Oral Mode)
 L2,user5,10/07/2025 13:29:41,ecpuha9cvd7cdo2i565c61hsu6,3.5/4,87.5% (Oral Mode)
 L2,user5,13/07/2025 09:13:16,u839k9lgtb8rg92sb2u6mtogh2,0/4,0%
 L2,user5,15/07/2025 04:41:14,3hu78g0uugthh24pivm760lcgo,0/4,0%
+L2,user5,20/07/2025 11:56:21,ptjqrgv99r63d2eeptkdflkcic,0/4,0%
+L2,user5,20/07/2025 13:10:01,ptjqrgv99r63d2eeptkdflkcic,2.5/4,62.5% (Oral Mode)
+L2,user5,20/07/2025 13:10:50,ptjqrgv99r63d2eeptkdflkcic,0/4,0% (Oral Mode)

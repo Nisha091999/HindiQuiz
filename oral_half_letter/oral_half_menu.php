@@ -7,6 +7,9 @@ if (!isset($_SESSION['user'])) {
     exit();
 }
 
+// Fallback if level is not set
+$level = isset($_SESSION['level']) ? $_SESSION['level'] : 'L2';
+
 // Menu folders for oral half letters
 $menus = [
     ["name" => "Ka half words", "folder" => "KaImages"],
@@ -14,7 +17,7 @@ $menus = [
     ["name" => "Ta half words", "folder" => "TaImages"],
     ["name" => "Tha half words", "folder" => "ThaImages"],
     ["name" => "Pa Half words", "folder" => "PaImages"],
-    ["name" => "All Random words", "folder" => "None"]
+    ["name" => "All Random words", "folder" => "None"]  // Random mode will be handled in next page
 ];
 ?>
 <!DOCTYPE html>
@@ -22,7 +25,6 @@ $menus = [
 <head>
     <meta charset="UTF-8">
     <title>Select Oral Half Letters Quiz</title>
-    <link rel="stylesheet" href="assets/style.css">
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -71,7 +73,7 @@ $menus = [
 <body>
 <div class="container">
     <h2>Welcome, <?= htmlspecialchars($_SESSION['user']) ?></h2>
-    <p>Level: <?= htmlspecialchars($_SESSION['level']) ?></p>
+    <p>Level: <?= htmlspecialchars($level) ?></p>
 
     <div class="grid">
         <?php foreach ($menus as $m): ?>

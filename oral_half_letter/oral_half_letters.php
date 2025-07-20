@@ -8,27 +8,48 @@ if (!isset($_SESSION['user']) || !isset($_SESSION['level'])) {
 
 $level = $_SESSION['level'];
 $folder = isset($_POST['folder']) ? $_POST['folder'] : 'KaImages';
-$imgPath = "AppFiles/images/$level/$folder/";
-$answerFile = $imgPath . "Answers.txt";
+
+// Handle "All Random words" option
+if ($folder === 'None') {
+    $allFolders = ['KaImages', 'ChaImages', 'TaImages', 'ThaImages', 'PaImages'];
+    $folder = $allFolders[array_rand($allFolders)];
+}
+
+// Server-side path to images folder
+$serverImgPath = __DIR__ . "/../AppFiles/images/$level/$folder/";
+
+// Web path for images (adjust if your project is in a subfolder)
+$webImgPath = "/HindiQuiz/AppFiles/images/$level/$folder/";
+
+// Answers file path on server
+$answerFile = $serverImgPath . "Answers.txt";
 
 $images = [];
 $answersMap = [];
 
 if (file_exists($answerFile)) {
     foreach (file($answerFile) as $line) {
-        if (trim($line)) {
+        $line = trim($line);
+        if ($line !== '') {
             $parts = explode(",", $line, 2);
             if (count($parts) === 2) {
-                list($img, $answers) = $parts;
-                $images[] = trim($img);
-                $answersMap[trim($img)] = array_map('trim', explode(",", $answers));
+                $img = trim($parts[0]);
+                $answers = array_map('trim', explode(",", $parts[1]));
+                $images[] = $img;
+                $answersMap[$img] = $answers;
             }
         }
     }
 }
 
+if (empty($images)) {
+    echo "<h2 style='color:red;text-align:center;'>No images found for folder: " . htmlspecialchars($folder) . "</h2>";
+    exit();
+}
+
 shuffle($images);
 $selectedImages = array_slice($images, 0, 10);
+
 $_SESSION['oral_quiz_images'] = $selectedImages;
 $_SESSION['oral_quiz_answers'] = $answersMap;
 $_SESSION['oral_quiz_folder'] = $folder;
@@ -36,7 +57,7 @@ $_SESSION['oral_quiz_folder'] = $folder;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Oral Half Letters Quiz</title>
     <style>
         body {
@@ -163,7 +184,7 @@ $_SESSION['oral_quiz_folder'] = $folder;
         <?php foreach ($selectedImages as $index => $img): ?>
             <div class="slide" id="slide<?= $index ?>">
                 <h3>Question <?= $index + 1 ?> of <?= count($selectedImages) ?></h3>
-                <img src="<?= $imgPath . $img ?>" alt="<?= htmlspecialchars($img) ?>" />
+                <img src="<?= $webImgPath . $img ?>" alt="<?= htmlspecialchars($img) ?>" />
                 <div class="voice-input">
                     <input type="hidden" name="img<?= $index ?>" value="<?= htmlspecialchars($img) ?>">
                     <input type="text" name="response<?= $index ?>" id="response<?= $index ?>" placeholder="Your spoken answer will appear here" readonly>
@@ -185,16 +206,81 @@ $_SESSION['oral_quiz_folder'] = $folder;
 </div>
 
 <script>
+    const totalSlides = document.querySelectorAll('.slide').length;
+    const recognitions = [];  // One recognizer per slide
+
+    // Initialize recognizers on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        for (let i = 0; i < totalSlides; i++) {
+            recognitions[i] = createRecognition(i);
+        }
+        showSlide(0);
+    });
+
+    function createRecognition(index) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Sorry, your browser does not support Speech Recognition API.');
+            return null;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'hi-IN';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        const statusDiv = document.getElementById('status' + index);
+
+        recognition.onstart = () => {
+            statusDiv.textContent = '🎙️ Listening... Please speak';
+        };
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('response' + index).value = transcript;
+            statusDiv.textContent = '✅ Voice captured';
+            setTimeout(() => { statusDiv.textContent = ''; }, 2000);
+        };
+
+        recognition.onerror = (event) => {
+            statusDiv.textContent = '❌ Error: ' + event.error;
+            setTimeout(() => { statusDiv.textContent = ''; }, 3000);
+        };
+
+        recognition.onend = () => {
+            if (statusDiv.textContent === '🎙️ Listening... Please speak') {
+                statusDiv.textContent = '⚠️ No speech detected';
+                setTimeout(() => { statusDiv.textContent = ''; }, 2000);
+            }
+        };
+
+        return recognition;
+    }
+
+    function startRecognition(index) {
+        if (!recognitions[index]) {
+            alert('Speech recognition not supported in this browser.');
+            return;
+        }
+
+        try {
+            recognitions[index].start();
+        } catch (e) {
+            // Avoid 'recognition has already started' error on multiple clicks
+            console.log('Recognition error:', e.message);
+        }
+    }
+
     let currentSlide = 0;
-    const slides = document.querySelectorAll('.slide');
-    const totalSlides = slides.length;
 
     function showSlide(index) {
+        const slides = document.querySelectorAll('.slide');
         slides.forEach(s => s.classList.remove('active'));
         slides[index].classList.add('active');
 
-        document.getElementById('submitBtn').style.display = (index === totalSlides - 1) ? 'inline-block' : 'none';
-        document.getElementById('nextBtn').style.display = (index === totalSlides - 1) ? 'none' : 'inline-block';
+        document.getElementById('submitBtn').style.display = (index === slides.length - 1) ? 'inline-block' : 'none';
+        document.getElementById('nextBtn').style.display = (index === slides.length - 1) ? 'none' : 'inline-block';
+        currentSlide = index;
     }
 
     function nextSlide() {
@@ -215,39 +301,6 @@ $_SESSION['oral_quiz_folder'] = $folder;
         document.getElementById('response' + index).value = '';
         document.getElementById('status' + index).textContent = '';
     }
-
-    function startRecognition(index) {
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = 'hi-IN';
-        recognition.interimResults = false;
-        recognition.maxAlternatives = 1;
-
-        const statusDiv = document.getElementById('status' + index);
-        statusDiv.textContent = '🎙️ Listening... Please speak';
-
-        recognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript;
-            document.getElementById('response' + index).value = transcript;
-            statusDiv.textContent = '✅ Voice captured';
-            setTimeout(() => statusDiv.textContent = '', 2000);
-        };
-
-        recognition.onerror = function(event) {
-            statusDiv.textContent = '❌ Error: ' + event.error;
-            setTimeout(() => statusDiv.textContent = '', 3000);
-        };
-
-        recognition.onend = function() {
-            if (statusDiv.textContent === '🎙️ Listening... Please speak') {
-                statusDiv.textContent = '⚠️ No speech detected';
-                setTimeout(() => statusDiv.textContent = '', 2000);
-            }
-        };
-
-        recognition.start();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => showSlide(0));
 </script>
 </body>
 </html>
