@@ -7,8 +7,8 @@ if (
     !isset($_SESSION['user']) || 
     !isset($_SESSION['quiz_images']) || 
     !isset($_SESSION['quiz_answers']) ||
-    $_SERVER['REQUEST_METHOD'] !== 'POST' ||
-    empty($_POST["img0"])
+    !isset($_SESSION['quiz_user_answers']) ||
+    $_SERVER['REQUEST_METHOD'] !== 'POST'
 ) {
     header("Location: index.php");
     exit();
@@ -18,6 +18,7 @@ $user      = $_SESSION['user'];
 $level     = $_SESSION['level'];
 $images    = $_SESSION['quiz_images'];
 $answers   = $_SESSION['quiz_answers'];
+$userAnswers = $_SESSION['quiz_user_answers'];
 $sessionId = session_id();
 $time      = date('d/m/Y H:i:s');
 
@@ -43,7 +44,7 @@ $totalPoints = 0;
 $totalPossible = count($images);
 
 foreach ($images as $i => $img) {
-    $response = trim($_POST["answer$i"] ?? '');
+    $response = trim($userAnswers[$i] ?? '');
     if (!isset($answers[$img])) continue;
 
     $bestMatch = 0;
@@ -223,7 +224,7 @@ file_put_contents("AppData/Scores.txt", $scoreLine, FILE_APPEND);
                 <tr>
                     <td><?= $i + 1 ?></td>
                     <td>
-                        <img src="<?= htmlspecialchars("AppFiles/images/$level/" . $_SESSION['quiz_folder'] . "/" . $r['img']) ?>" 
+                        <img src="<?= htmlspecialchars("AppFiles/images/$level/" . ($_SESSION['quiz_folder'] ?? '') . "/" . $r['img']) ?>" 
                              alt="Q<?= $i + 1 ?>" 
                              width="75" height="75" 
                              style="object-fit: cover; border: 1px solid #ccc;" />
