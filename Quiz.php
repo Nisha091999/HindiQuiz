@@ -228,8 +228,8 @@ if (isset($_POST['folder'])) {
     <button id="nextBtn" onclick="nextQuestion()" disabled>Next</button>
   </div>
 
-  <audio id="correctSound" src="/WebAppBkp/AppFiles/sound/correct.mp3"></audio>
-  <audio id="wrongSound"   src="/WebAppBkp/AppFiles/sound/wrong.mp3"></audio>
+  <audio id="correctSound" src="/HindiQuiz/AppFiles/sound/correct.mp3"></audio>
+  <audio id="wrongSound"   src="/HindiQuiz/AppFiles/sound/wrong.mp3"></audio>
 
   <script>
     let currentQuestion = 0;
