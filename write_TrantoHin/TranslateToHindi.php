@@ -51,19 +51,26 @@ $_SESSION['translate_eng_answers'] = array_column($selectedSet, 'answers');
     .slide { display: none; }
     .slide.active { display: block; }
     .sentence-box {
-        font-size: 18px;
-        margin-bottom: 14px;
+        font-size: 25px;
+        margin-bottom: 12px;
         font-weight: 600;
+        color: #333;
+        padding-left: 2px;
     }
     input[type="text"] {
-        width: 100%;
+        display: block;
+        width: 96%;
+        margin: 0 auto 16px auto;
         padding: 14px;
         font-size: 17px;
-        border-radius: 10px;
+        border-radius: 8px;
         border: 1px solid #ccc;
-        margin-bottom: 10px;
-        background-color: #fcfcfc;
+        box-sizing: border-box;
+        background-color: #fff;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
     }
+
+
     .feedback {
         margin-top: 10px;
         font-weight: bold;
@@ -104,6 +111,14 @@ $_SESSION['translate_eng_answers'] = array_column($selectedSet, 'answers');
         background-color: #cccccc;
         cursor: not-allowed;
     }
+
+    #checkBtn {
+        background-color: #f39c12;
+        color: white;
+        margin-right: auto;  /* Pushes button to the left */
+    }
+
+
 </style>
 <script>
 let current = 0;
