@@ -2,6 +2,18 @@
 session_start();
 $_SESSION['quiz_done'] = true;
 
+// Capture submitted answers from POST into session
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $userAnswers = [];
+    foreach ($_POST as $key => $value) {
+        if (strpos($key, 'answer_') === 0) {
+            $userAnswers[] = trim($value);
+        }
+    }
+    $_SESSION['quiz_user_answers'] = $userAnswers;
+}
+
+
 // Validate access
 if (
     !isset($_SESSION['user']) || 

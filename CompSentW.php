@@ -1,6 +1,6 @@
 <?php
 session_start();
-$answerFile = "AppFiles/L2/Match/answers.txt";
+$answerFile = "AppFiles/L2/Match/Answers.txt";
 $sentences = [];
 $words = [];
 
@@ -65,7 +65,7 @@ $_SESSION['match_sentences'] = $sentences;
 </head>
 <body>
 <h2>रिक्त स्थान में सही शब्द भरें</h2>
-<form method="POST" action="match_results.php">
+<form method="POST" action="Match_Results.php">
   <div class="container">
     <div class="sentences" id="sentences">
       <?php foreach ($sentences as $i => $item): ?>

@@ -72,3 +72,7 @@ L2,user5,22/07/2025 19:17:29,31u2839pu8g02ae1ij2k2h81av,0/4,0%
 L2,user5,23/07/2025 08:07:19,1ccvs7m5uitn9gjqgg5uh3o8gh,0/4,0%
 L2,user5,23/07/2025 11:10:39,1ccvs7m5uitn9gjqgg5uh3o8gh,0/4,0%
 L2,user5,23/07/2025 11:13:25,1ccvs7m5uitn9gjqgg5uh3o8gh,1.5/4,37.5%
+L2,user5,28/07/2025 08:50:46,bqh18q9de8h3lbgic18q28fcmu,0/4,0%
+L2,user5,28/07/2025 08:54:38,bqh18q9de8h3lbgic18q28fcmu,1/4,25%
+L2,user5,28/07/2025 09:00:41,bqh18q9de8h3lbgic18q28fcmu,1/4,25%
+L2,user5,28/07/2025 09:03:24,bqh18q9de8h3lbgic18q28fcmu,0/4,0%
