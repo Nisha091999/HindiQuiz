@@ -76,3 +76,11 @@ L2,user5,28/07/2025 08:50:46,bqh18q9de8h3lbgic18q28fcmu,0/4,0%
 L2,user5,28/07/2025 08:54:38,bqh18q9de8h3lbgic18q28fcmu,1/4,25%
 L2,user5,28/07/2025 09:00:41,bqh18q9de8h3lbgic18q28fcmu,1/4,25%
 L2,user5,28/07/2025 09:03:24,bqh18q9de8h3lbgic18q28fcmu,0/4,0%
+L2,user5,28/07/2025 18:38:48,bqh18q9de8h3lbgic18q28fcmu,1/4,25% (Oral Mode)
+L2,user5,29/07/2025 07:50:28,du3b1v5lh3mal7228a6ppll539,2.5/4,62.5% (Oral Mode)
+L2,user5,29/07/2025 07:56:45,du3b1v5lh3mal7228a6ppll539,2.5/4,62.5% (Oral Mode)
+L2,user5,29/07/2025 08:01:29,du3b1v5lh3mal7228a6ppll539,0/4,0% (Oral Mode)
+L2,user5,29/07/2025 08:03:10,du3b1v5lh3mal7228a6ppll539,0/4,0% (Oral Mode)
+L2,user5,29/07/2025 08:10:36,du3b1v5lh3mal7228a6ppll539,2/4,50% (Oral Mode)
+L2,user5,29/07/2025 08:29:52,du3b1v5lh3mal7228a6ppll539,2/4,50% (Oral Mode)
+L2,user5,29/07/2025 08:41:27,du3b1v5lh3mal7228a6ppll539,2/4,50% (Oral Mode)
