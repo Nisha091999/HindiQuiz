@@ -37,9 +37,13 @@ $time      = date('d/m/Y H:i:s');
 function calculateMatchPercentage($userAnswer, $correctAnswer) {
     if (!$userAnswer || !$correctAnswer) return 0;
 
-    $userChars = preg_split('//u', $userAnswer, null, PREG_SPLIT_NO_EMPTY);
-    $correctChars = preg_split('//u', $correctAnswer, null, PREG_SPLIT_NO_EMPTY);
+    $userChars = preg_split('//u', (string)$userAnswer, 0, (string)PREG_SPLIT_NO_EMPTY);
+    $correctChars = preg_split('//u', (string)$correctAnswer, 0, (string)PREG_SPLIT_NO_EMPTY);
+    // $userChars = preg_split('//u', $userAnswer, null, PREG_SPLIT_NO_EMPTY);
+    // $correctChars = preg_split('//u', $correctAnswer, null, PREG_SPLIT_NO_EMPTY);
     $matchCount = 0;
+
+    
 
     foreach ($userChars as $i => $char) {
         if (isset($correctChars[$i]) && $char === $correctChars[$i]) {

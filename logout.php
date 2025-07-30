@@ -1,5 +1,9 @@
 <?php
 session_start();
+session_unset();
 session_destroy();
-header("Location: index.php");
+
+// Redirect using full path relative to your project folder
+header("Location: /HindiQuiz/index.php");
 exit();
+?>
