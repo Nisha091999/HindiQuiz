@@ -11,7 +11,7 @@ $questions = [];
 
 foreach ($lines as $line) {
     if (preg_match('/^(.*?)(?=\s*")\s*(.*)$/u', $line, $matches)) {
-        $hindi = trim($matches[1]);
+        $hindi = rtrim(trim($matches[1]), "।.?!॥,");
         preg_match_all('/"([^"]+)"/u', $matches[2], $answerMatches);
         $answers = array_map('trim', $answerMatches[1]);
         $questions[] = ['hindi' => $hindi, 'answers' => $answers];

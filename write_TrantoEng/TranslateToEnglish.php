@@ -6,7 +6,7 @@ $allQuestions = [];
 
 foreach ($lines as $line) {
     if (preg_match('/^(.*?)(?=\s*")\s*(.*)$/u', $line, $matches)) {
-        $hindi = trim($matches[1]);
+        $hindi = rtrim(trim($matches[1]), "।.?!॥,");
         $answerPart = trim($matches[2]);
 
         preg_match_all('/"([^"]+)"/u', $answerPart, $answerMatches);

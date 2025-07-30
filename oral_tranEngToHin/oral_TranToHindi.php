@@ -10,7 +10,7 @@ $questions = [];
 
 foreach ($lines as $line) {
     if (preg_match('/^(.*?)(?=\s*")\s*(.*)$/u', $line, $matches)) {
-        $english = trim($matches[1]);
+        $english = trim($matches[1], "।.?!॥,");
         preg_match_all('/"([^"]+)"/u', $matches[2], $answerMatches);
         $answers = $answerMatches[1];
         $questions[] = ['english' => $english, 'answers' => $answers];
